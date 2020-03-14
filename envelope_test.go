@@ -892,6 +892,35 @@ func TestBadAddressHeaderInMime(t *testing.T) {
 	}
 }
 
+func TestMultiLineMailToAddressHeaderInMime(t *testing.T) {
+	msg := test.OpenTestData("mail", "multiple-mailto-address-header-values.raw")
+	e, err := enmime.ReadEnvelope(msg)
+
+	if err != nil {
+		t.Fatal("Failed to parse MIME:", err)
+	}
+
+	tos, err := e.AddressList("To")
+	if err != nil {
+		t.Log(err)
+	}
+
+	if len(tos) != 2 {
+		t.Fatal("To header should have 2 entry")
+	}
+
+	want := "alice@intern"
+	got := tos[0].Address
+	if got != want {
+		t.Errorf("To was: %q, want: %q", got, want)
+	}
+	want = "bob@intern"
+	got = tos[1].Address
+	if got != want {
+		t.Errorf("To was: %q, want: %q", got, want)
+	}
+}
+
 func TestBadContentTypeInMime(t *testing.T) {
 	msg := test.OpenTestData("mail", "mime-bad-content-type.raw")
 	e, err := enmime.ReadEnvelope(msg)

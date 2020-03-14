@@ -110,22 +110,38 @@ func (e *Envelope) AddressList(key string) ([]*mail.Address, error) {
 		return nil, fmt.Errorf("%s is not an address header", key)
 	}
 
-	str := decodeToUTF8Base64Header(e.header.Get(key))
+	vals := (*e.header)[textproto.CanonicalMIMEHeaderKey(key)]
+	if len(vals) == 0 {
+		return nil, mail.ErrHeaderNotPresent
+	}
 
-	// These statements are handy for debugging ParseAddressList errors
-	// fmt.Println("in:  ", m.header.Get(key))
-	// fmt.Println("out: ", str)
-	ret, err := mail.ParseAddressList(str)
-	if err != nil {
+	var rets []*mail.Address
+	for _, val := range vals {
+		str := decodeToUTF8Base64Header(val)
+
+		// These statements are handy for debugging ParseAddressList errors
+		// fmt.Println("in:  ", m.header.Get(key))
+		// fmt.Println("out: ", str)
+		addrs, err := mail.ParseAddressList(str)
+		if err == nil {
+			rets = append(rets, addrs...)
+			continue
+		}
+
 		switch err.Error() {
 		case "mail: expected comma":
-			return mail.ParseAddressList(ensureCommaDelimitedAddresses(str))
-		case "mail: no address":
-			return nil, mail.ErrHeaderNotPresent
+			addrs, err = mail.ParseAddressList(ensureCommaDelimitedAddresses(str))
+			if err == nil {
+				rets = append(rets, addrs...)
+			}
 		}
-		return nil, err
 	}
-	return ret, nil
+
+	if len(rets) == 0 {
+		return nil, mail.ErrHeaderNotPresent
+	}
+
+	return rets, nil
 }
 
 // Clone returns a clone of the current Envelope
