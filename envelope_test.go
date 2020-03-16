@@ -1097,7 +1097,7 @@ func TestBadAddressHeaderInMime(t *testing.T) {
 }
 
 func TestMultiLineMailToAddressHeaderInMime(t *testing.T) {
-	msg := test.OpenTestData("mail", "multiple-mailto-address-header-values.raw")
+	msg := test.OpenTestData("mail", "multiline-mailto-address-header-values.raw")
 	e, err := enmime.ReadEnvelope(msg)
 
 	if err != nil {
