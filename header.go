@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"mime"
 	"net/textproto"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/jhillyerd/enmime/internal/coding"
 	"github.com/pkg/errors"
@@ -339,6 +341,22 @@ func consumeParam(s string) (consumed, rest string) {
 
 	param := strings.Builder{}
 	param.WriteString(s[:i+1])
+
+	if strings.HasPrefix(strings.TrimLeftFunc(s, unicode.IsSpace), "name=") {
+		name := strings.Split(s, "=")
+		if len(name) > 1 {
+			name := strings.Split(name[1], ";")
+			var builder strings.Builder
+			builder.WriteString(s[0:i+1])
+			if len(name[0]) > 0 && name[0][0] == '"' {
+				builder.WriteString(name[0])
+			} else {
+				builder.WriteString(strconv.Quote(name[0]))
+			}
+			s = builder.String()
+		}
+	}
+	
 	s = s[i+1:]
 
 	value := strings.Builder{}

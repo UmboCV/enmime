@@ -363,6 +363,14 @@ func TestFixUnquotedSpecials(t *testing.T) {
 			input: `text/html;charset="`,
 			want:  `text/html;charset=""`,
 		},
+		{
+			input: `Content-Type: video/mp4; name=XND-8081VZ.2020-Mar-12 02h25m51s PM (EDT).mp4`,
+			want:  `Content-Type: video/mp4; name="XND-8081VZ.2020-Mar-12 02h25m51s PM (EDT).mp4"`,
+		},
+		{
+			input: `Content-Type: video/mp4; name="XND-8081VZ.2020-Mar-12 02h25m51s PM (EDT).mp4"`,
+			want:  `Content-Type: video/mp4; name="XND-8081VZ.2020-Mar-12 02h25m51s PM (EDT).mp4"`,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.input, func(t *testing.T) {
