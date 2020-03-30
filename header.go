@@ -341,19 +341,26 @@ func consumeParam(s string) (consumed, rest string) {
 
 	param := strings.Builder{}
 	param.WriteString(s[:i+1])
-
-	if strings.HasPrefix(strings.TrimLeftFunc(s, unicode.IsSpace), "name=") {
-		name := strings.Split(s, "=")
-		if len(name) > 1 {
-			name := strings.Split(name[1], ";")
-			var builder strings.Builder
-			builder.WriteString(s[0:i+1])
-			if len(name[0]) > 0 && name[0][0] == '"' {
-				builder.WriteString(name[0])
-			} else {
-				builder.WriteString(strconv.Quote(name[0]))
+	var originalStr = s[:]
+	originalStrArr := strings.Split(originalStr, ";")
+	if len(originalStrArr) > 0 {
+		if strings.HasPrefix(strings.TrimLeftFunc(originalStrArr[0], unicode.IsSpace), "name=") {
+			name := strings.Split(originalStrArr[0], "=")
+			if len(name) > 1 {
+				var builder strings.Builder
+				builder.WriteString(name[0]+"=")
+				if len(name[1]) > 0 {
+					if strings.HasPrefix(name[1], "\"") {
+						builder.WriteString(name[1])
+					} else {
+						builder.WriteString(strconv.Quote(name[1]))
+					}
+				}
+				if len(originalStrArr) > 1 {
+					builder.WriteString(";" + originalStrArr[1])
+				}
+				s = builder.String()
 			}
-			s = builder.String()
 		}
 	}
 	
