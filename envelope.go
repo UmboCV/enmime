@@ -26,16 +26,16 @@ type Envelope struct {
 	// content.
 	OtherParts []*Part
 	Errors     []*Error              // Errors encountered while parsing
-	header     *textproto.MIMEHeader // Header from original message
+	Header     *textproto.MIMEHeader // Header from original message
 }
 
 // GetHeaderKeys returns a list of header keys seen in this message. Get
 // individual headers with `GetHeader(name)`
 func (e *Envelope) GetHeaderKeys() (headers []string) {
-	if e.header == nil {
+	if e.Header == nil {
 		return
 	}
-	for key := range *e.header {
+	for key := range *e.Header {
 		headers = append(headers, key)
 	}
 	return headers
@@ -44,21 +44,21 @@ func (e *Envelope) GetHeaderKeys() (headers []string) {
 // GetHeader processes the specified header for RFC 2047 encoded words and returns the result as a
 // UTF-8 string
 func (e *Envelope) GetHeader(name string) string {
-	if e.header == nil {
+	if e.Header == nil {
 		return ""
 	}
-	return coding.DecodeExtHeader(e.header.Get(name))
+	return coding.DecodeExtHeader(e.Header.Get(name))
 }
 
 // GetHeaderValues processes the specified header for RFC 2047 encoded words and returns all existing
 // values as a list of UTF-8 strings
 func (e *Envelope) GetHeaderValues(name string) []string {
-	if e.header == nil {
+	if e.Header == nil {
 		return []string{}
 	}
 
-	rawValues := (*e.header)[inttp.CanonicalEmailMIMEHeaderKey(name)]
-	values := make([]string, 0, len(rawValues))
+	rawValues := (*e.Header)[inttp.CanonicalEmailMIMEHeaderKey(name)]
+	var values []string
 	for _, v := range rawValues {
 		values = append(values, coding.DecodeExtHeader(v))
 	}
@@ -74,10 +74,10 @@ func (e *Envelope) SetHeader(name string, value []string) error {
 
 	for i, v := range value {
 		if i == 0 {
-			e.header.Set(name, mime.BEncoding.Encode("utf-8", v))
+			e.Header.Set(name, mime.BEncoding.Encode("utf-8", v))
 			continue
 		}
-		e.header.Add(name, mime.BEncoding.Encode("utf-8", v))
+		e.Header.Add(name, mime.BEncoding.Encode("utf-8", v))
 	}
 	return nil
 }
@@ -89,7 +89,7 @@ func (e *Envelope) AddHeader(name string, value string) error {
 		return errors.New("provide non-empty header name")
 	}
 
-	e.header.Add(name, mime.BEncoding.Encode("utf-8", value))
+	e.Header.Add(name, mime.BEncoding.Encode("utf-8", value))
 	return nil
 }
 
@@ -99,20 +99,20 @@ func (e *Envelope) DeleteHeader(name string) error {
 		return errors.New("provide non-empty header name")
 	}
 
-	e.header.Del(name)
+	e.Header.Del(name)
 	return nil
 }
 
 // AddressList returns a mail.Address slice with RFC 2047 encoded names converted to UTF-8
 func (e *Envelope) AddressList(key string) ([]*mail.Address, error) {
-	if e.header == nil {
+	if e.Header == nil {
 		return nil, errors.New("no headers available")
 	}
 	if !AddressHeaders[strings.ToLower(key)] {
 		return nil, fmt.Errorf("%s is not an address header", key)
 	}
 
-	vals := (*e.header)[textproto.CanonicalMIMEHeaderKey(key)]
+	vals := (*e.Header)[textproto.CanonicalMIMEHeaderKey(key)]
 	if len(vals) == 0 {
 		return nil, mail.ErrHeaderNotPresent
 	}
@@ -155,7 +155,7 @@ func (e *Envelope) Clone() *Envelope {
 		e.Inlines,
 		e.OtherParts,
 		e.Errors,
-		e.header,
+		e.Header,
 	}
 	return newEnvelope
 }
@@ -190,7 +190,7 @@ func EnvelopeFromPart(root *Part) (*Envelope, error) {
 func (p Parser) EnvelopeFromPart(root *Part) (*Envelope, error) {
 	e := &Envelope{
 		Root:   root,
-		header: &root.Header,
+		Header: &root.Header,
 	}
 
 	if detectMultipartMessage(root, p.multipartWOBoundaryAsSinglePart) {
