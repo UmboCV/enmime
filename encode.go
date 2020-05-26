@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/jhillyerd/enmime/v2/internal/coding"
 	"github.com/jhillyerd/enmime/v2/internal/stringutil"
@@ -204,11 +203,7 @@ func (p *Part) encodeHeader(b *bufio.Writer) error {
 				}
 			}
 			// _ used to prevent early wrapping
-			var strLength = 76
-			if strings.HasPrefix(strings.TrimLeftFunc(v, unicode.IsSpace), "video/mp4; name=") {
-				strLength = 76 * 2
-			}
-			wb := stringutil.Wrap(strLength, k, ":_", encv, "\r\n")
+			wb := stringutil.Wrap(76, k, ":_", encv, "\r\n")
 			wb[len(k)+1] = ' '
 			if _, err := b.Write(wb); err != nil {
 				return err
