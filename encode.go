@@ -8,9 +8,7 @@ import (
 	"mime/quotedprintable"
 	"net/textproto"
 	"sort"
-	"strings"
 	"time"
-	"unicode"
 
 	"github.com/jhillyerd/enmime/internal/coding"
 	"github.com/jhillyerd/enmime/internal/stringutil"
@@ -145,11 +143,7 @@ func (p *Part) encodeHeader(b *bufio.Writer) {
 				encv = mime.QEncoding.Encode(utf8, v)
 			}
 			// _ used to prevent early wrapping
-			var strLength = 76
-			if strings.HasPrefix(strings.TrimLeftFunc(v, unicode.IsSpace), "video/mp4; name=") {
-				strLength = 76 * 2
-			}
-			wb := stringutil.Wrap(strLength, k, ":_", encv, "\r\n")
+			wb := stringutil.Wrap(76, k, ":_", encv, "\r\n")
 			wb[len(k)+1] = ' '
 			b.Write(wb)
 		}
