@@ -278,6 +278,11 @@ func fixMangledMediaType(mtype, sep string) string {
 				}
 			}
 		default:
+			if len(p) == 0 {
+				// Ignore trailing separators.
+				continue
+			}
+
 			if !strings.Contains(p, "=") {
 				p = p + "=" + pvPlaceholder
 			}
@@ -347,7 +352,7 @@ func consumeParam(s string) (consumed, rest string) {
 		if len(name) > 1 {
 			name := strings.Split(name[1], ";")
 			var builder strings.Builder
-			builder.WriteString(s[0:i+1])
+			builder.WriteString(s[0 : i+1])
 			if len(name[0]) > 0 && name[0][0] == '"' {
 				builder.WriteString(name[0])
 			} else {
@@ -356,7 +361,7 @@ func consumeParam(s string) (consumed, rest string) {
 			s = builder.String()
 		}
 	}
-	
+
 	s = s[i+1:]
 
 	value := strings.Builder{}
