@@ -134,6 +134,11 @@ func (e *Envelope) AddressList(key string) ([]*mail.Address, error) {
 			if err == nil {
 				rets = append(rets, addrs...)
 			}
+		case "mail: no angle-addr":
+			addrs, err = mail.ParseAddressList(ensureUnquoteAddress(str))
+			if err == nil {
+				rets = append(rets, addrs...)
+			}
 		}
 	}
 
@@ -410,4 +415,12 @@ func ensureCommaDelimitedAddresses(s string) string {
 		sb.WriteRune(r)
 	}
 	return sb.String()
+}
+
+// Used by AddressList to ensure that address is not quoted
+func ensureUnquoteAddress(s string) string {
+	if len(s) > 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		return s[1 : len(s)-1]
+	}
+	return s
 }
