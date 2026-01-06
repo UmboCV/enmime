@@ -134,3 +134,35 @@ func TestCommaDelimitedAddressLists(t *testing.T) {
 		})
 	}
 }
+
+func TestEnsureUnquoteAddress(t *testing.T) {
+	testData := []struct {
+		have string
+		want string
+	}{
+		{
+			have: `"alice@intern"`,
+			want: `alice@intern`,
+		},
+		{
+			have: `alice@intern`,
+			want: `alice@intern`,
+		},
+		{
+			have: `"bob+20260106@intern"`,
+			want: `bob+20260106@intern`,
+		},
+		{
+			have: `bob+20260106@intern`,
+			want: `bob+20260106@intern`,
+		},
+	}
+	for _, tt := range testData {
+		t.Run(tt.have, func(t *testing.T) {
+			v := stringutil.EnsureUnquoteAddress(tt.have)
+			if tt.want != v {
+				t.Errorf("got: %q\nwant: %q", v, tt.want)
+			}
+		})
+	}
+}

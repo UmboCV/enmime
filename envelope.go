@@ -112,7 +112,24 @@ func (e *Envelope) AddressList(key string) ([]*mail.Address, error) {
 		return nil, fmt.Errorf("%s is not an address header", key)
 	}
 
-	return ParseAddressList(e.header.Get(key))
+	vals := (*e.header)[textproto.CanonicalMIMEHeaderKey(key)]
+	if len(vals) == 0 {
+		return nil, mail.ErrHeaderNotPresent
+	}
+
+	var rets []*mail.Address
+	for _, val := range vals {
+		addrLists, err := ParseAddressList(val)
+		if err == nil {
+			rets = append(rets, addrLists...)
+		}
+	}
+
+	if len(rets) == 0 {
+		return nil, mail.ErrHeaderNotPresent
+	}
+
+	return rets, nil
 }
 
 // Date parses the Date header field.

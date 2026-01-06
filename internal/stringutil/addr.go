@@ -104,3 +104,11 @@ func EnsureCommaDelimitedAddresses(s string) string {
 	}
 	return sb.String()
 }
+
+// EnsureUnquoteAddress removes surrounding quotes from an email address if they exist.
+func EnsureUnquoteAddress(s string) string {
+	if len(s) > 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		return s[1 : len(s)-1]
+	}
+	return s
+}

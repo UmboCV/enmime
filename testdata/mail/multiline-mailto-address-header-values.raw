@@ -1,0 +1,10 @@
+To: alice@intern
+To: bob@intern
+Subject: test
+Content-Type: multipart/mixed; boundary="b1914efc629febb89915e8a6f83ba6eb"
+
+--b1914efc629febb89915e8a6f83ba6eb
+Content-Type: text/plain
+
+Simple text.
+--b1914efc629febb89915e8a6f83ba6eb--
